@@ -10,19 +10,19 @@ const saltRounds = 10; // for bcrypt password hashing
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 const path = require('path');
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 // Configure session middleware to use MongoDB
 app.use(session({
-  secret: process.env.NODE_SESSION_SECRET || 'myNodeSecretKey',
+  secret: process.env.NODE_SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.MONGO_CONNECTION_STR,
     crypto: { 
-      secret: process.env.MONGO_SESSION_SECRET || 'myMongoSecretKey'
+      secret: process.env.MONGO_SESSION_SECRET
     }
   }),
   cookie: {
@@ -67,8 +67,8 @@ app.get('/login', (req, res) => {
 
 // MySQL connection (secure version)
 const mysqlConnection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
+    host: process.env.MYSQL_HOST,
+    user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DB
 });
