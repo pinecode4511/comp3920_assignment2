@@ -87,7 +87,7 @@ app.post('/signup', (req, res) => {
         if (err) {
             res.send('Error hashing password.');
         } else {
-            const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+            const query = 'INSERT INTO user (username, password) VALUES (?, ?)';
             mysqlConnection.query(query, [username, hash], (error) => {
                 if (error) {
                   console.error(error);
@@ -103,7 +103,7 @@ app.post('/signup', (req, res) => {
 // Login Handler with bcrypt password verification
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    const query = 'SELECT * FROM users WHERE username = ?';
+    const query = 'SELECT * FROM user WHERE username = ?';
     mysqlConnection.query(query, [username], (error, results) => {
         if (error || results.length === 0) {
             res.send('Login failed. User not found.');
