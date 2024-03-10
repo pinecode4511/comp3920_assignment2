@@ -5,7 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function logout() {
-  // Implement logout functionality here
-  // For example, redirect to a server route that destroys the session
   window.location.href = '/logout';
 }
+
+function getRooms() {
+  window.location.href = '/rooms';
+} 

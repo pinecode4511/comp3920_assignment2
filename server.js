@@ -128,6 +128,35 @@ app.get('/logout', (req, res) => {
   });
 });
 
+app.get('/rooms', async (req, res) => {
+  try {
+    // Assume the user is authenticated and their ID is available
+    // This would normally come from session or JWT token
+    const userId = req.session.user_id || req.user.id; // Replace with your auth method
+
+    // Query to get all rooms for the current user
+    const query = `
+      SELECT room.room_id, room.room_name, MAX(message.sent_datetime) as last_message_date
+      FROM room_user
+      JOIN room ON room_user.room_id = room.room_id
+      LEFT JOIN message ON room_user.room_user_id = message.room_user_id
+      WHERE room_user.user_id = ?
+      GROUP BY room.room_id
+      ORDER BY last_message_date DESC
+    `;
+
+    // Execute the query
+    const [rows] = await mysqlConnection.execute(query, [userId]);
+
+    // Send the result back to the client
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching rooms:', error);
+    res.status(500).send('An error occurred while fetching rooms.');
+  }
+});
+
+
 app.get("*", (req,res) => {
 	res.status(404);
 	res.send("Page not found - 404");
