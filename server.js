@@ -12,6 +12,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 const path = require('path');
+const e = require('express');
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -106,7 +107,7 @@ app.post('/login', (req, res) => {
     const query = 'SELECT * FROM user WHERE username = ?';
     mysqlConnection.query(query, [username], (error, results) => {
         if (error || results.length === 0) {
-            res.send('Login failed. User not found.');
+            res.send('Login failed. User not found.',error);
         } else {
             bcrypt.compare(password, results[0].password, (err, result) => {
                 if (result) {
