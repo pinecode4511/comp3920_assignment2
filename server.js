@@ -112,6 +112,7 @@ app.post('/login', (req, res) => {
             bcrypt.compare(password, results[0].password, (err, result) => {
                 if (result) {
                     req.session.username = username;
+                    req.session.user_id = results[0].user_id;
                     console.log(`Log in successful. Username: ${username}`);
                     res.redirect('/member');
                 } else {
@@ -132,7 +133,7 @@ app.get('/logout', (req, res) => {
 app.get('/rooms', async (req, res) => {
   try {
     // Get the user ID from the session
-    // const userId = req.session.user_id || req.user.id;
+    const userId = req.session.user_id || req.user.id;
     console.log('req.session:', req.session);
 
     // Query to get all rooms for the current user
