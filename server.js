@@ -130,9 +130,8 @@ app.get('/logout', (req, res) => {
 
 app.get('/rooms', async (req, res) => {
   try {
-    // Assume the user is authenticated and their ID is available
-    // This would normally come from session or JWT token
-    const userId = req.session.user_id || req.user.id;
+    // Get the user ID from the session
+    // const userId = req.session.user_id || req.user.id;
     console.log('req.session:', req.session);
 
     // Query to get all rooms for the current user
