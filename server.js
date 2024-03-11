@@ -133,8 +133,7 @@ app.get('/logout', (req, res) => {
 app.get('/rooms', async (req, res) => {
   try {
     // Get the user ID from the session
-    const userId = req.session.user_id || req.user.id;
-    console.log('req.session:', req.session);
+    const userId = req.session.user_id;
 
     // Query to get all rooms for the current user
     const query = `
@@ -148,10 +147,11 @@ app.get('/rooms', async (req, res) => {
     `;
 
     // Execute the query
-    const [rows] = await mysqlConnection.execute(query, [userId]);
+    const results = await mysqlConnection.execute(query, [userId]);
+    console.log( `results`, results);
 
     // Send the result back to the client
-    res.json(rows);
+    // res.json(rows);
   } catch (error) {
     console.error('Error fetching rooms:', error);
     res.status(500).send('An error occurred while fetching rooms.');
