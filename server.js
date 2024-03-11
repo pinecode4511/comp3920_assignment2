@@ -147,8 +147,9 @@ app.get('/rooms', async (req, res) => {
     `;
 
     // Execute the query
-    const results = await mysqlConnection.execute(query, [userId]);
-    console.log( `results`, results);
+    const [rows, fields] = await mysqlConnection.execute(query, [userId]);
+    console.log(`Rows for user ${userId}:`, rows);
+    res.send(rows);
 
     // Send the result back to the client
     // res.json(rows);
