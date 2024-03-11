@@ -144,7 +144,7 @@ app.get("/rooms", async (req, res) => {
       ORDER BY last_message_date DESC
     `;
 
-    mysqlConnection.query(query, (error, results, fields) => {
+    mysqlConnection.query(query, [userId], (error, results, fields) => {
       if (error) {
         console.error('Error executing query:', error);
         return;
