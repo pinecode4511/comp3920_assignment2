@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Room <%= roomId %></title>
+</head>
+<body>
+    <h1>Chat Room <%= roomId %></h1>
+    <% messages.forEach(function(message) { %>
+        <div class="message">
+            <p><strong><%= message.username %></strong> (<%= message.sent_datetime %>): <%= message.message_content %></p>
+        </div>
+    <% }); %>
+</body>
+</html>

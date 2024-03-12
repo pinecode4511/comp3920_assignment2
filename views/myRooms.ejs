@@ -6,12 +6,16 @@
 </head>
 <body>
     <h1>My Chat Rooms</h1>
-    <% rooms.forEach(function(room) { %>
-        <div>
-            <p>Room ID: <%= room.room_id %></p>
-            <p>Last Message Date: <%= room.last_message_date %></p>
-            <p>Unread Messages: <%= room.unread_message_count %></p>
-        </div>
-    <% }); %>
+    <div id="rooms-container">
+        <% rooms.forEach(function(room) { %>
+            <div class="room">
+                <a href="/rooms/<%= room.room_id %>">
+                    Room ID: <%= room.room_id %>, 
+                    Last Message Date: <%= room.last_message_date %>, 
+                    Unread Messages: <%= room.unread_message_count %>
+                </a>
+            </div>
+        <% }); %>
+    </div>
 </body>
 </html>

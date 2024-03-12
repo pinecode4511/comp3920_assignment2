@@ -9,15 +9,13 @@ const saltRounds = 10; // for bcrypt password hashing
 
 require("dotenv").config();
 
-const app = express();  
+const app = express();
 const port = process.env.PORT || 3000;
 const path = require("path");
-const e = require("express");
-
 
 // Set the view engine to ejs
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 // Configure session middleware to use MongoDB
@@ -135,10 +133,10 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/myRooms", async (req, res) => {
-  if(!req.session.user_id){
+  if (!req.session.user_id) {
     res.status(401).send("Unauthorized");
     return;
-  }else{
+  } else {
     const userId = req.session.user_id;
     // Query to get all rooms for the current user
     const query = `
@@ -162,17 +160,63 @@ app.get("/myRooms", async (req, res) => {
     GROUP BY room.room_id
     ORDER BY last_message_date DESC;
       `;
-  
+
     mysqlConnection.query(query, [userId], (error, results, fields) => {
       if (error) {
         console.error("Error executing query:", error);
         return;
       }
       console.log("Query Results:", results);
-      res.render('myRooms', { rooms: results });
+      res.render("myRooms", { rooms: results });
     });
   }
+});
 
+app.get("/rooms/:roomId", async (req, res) => {
+  if (!req.session.user_id) {
+    res.status(401).send("Unauthorized: User not logged in.");
+    return;
+  }
+
+  const userId = req.session.user_id;
+  const roomId = req.params.roomId;
+
+  // Query to check if the user is a member of the room
+  const membershipQuery = `
+      SELECT * FROM room_user WHERE room_id = ? AND user_id = ?
+  `;
+
+  try {
+    const [membership] = await mysqlConnection
+      .promise()
+      .query(membershipQuery, [roomId, userId]);
+
+    // If the user is not a member of the room, send an unauthorized message
+    if (membership.length === 0) {
+      res.status(401).send("Unauthorized: You are not a member of this room.");
+      return;
+    }
+
+    // Query to fetch messages from the database for the room
+    const messagesQuery = `
+      SELECT m.message_content, u.username, m.sent_datetime 
+      FROM message m
+      JOIN room_user ru ON ru.room_user_id = m.room_user_id
+      JOIN user u ON u.user_id = ru.user_id
+      WHERE ru.room_id = 1
+      ORDER BY m.sent_datetime ASC;
+      `;
+
+    const [messages] = await mysqlConnection
+      .promise()
+      .query(messagesQuery, [roomId]);
+
+    // Render the template for displaying messages
+    res.render("roomMessages", { roomId: roomId, messages: messages });
+  } catch (error) {
+    console.error("Error executing query:", error);
+    res.status(500).send("An error occurred while fetching messages.");
+  }
 });
 
 app.get("*", (req, res) => {
