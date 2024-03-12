@@ -130,18 +130,30 @@ app.get("/logout", (req, res) => {
   });
 });
 
-app.get("/rooms", async (req, res) => {
+app.get("/myRooms", async (req, res) => {
   const userId = req.session.user_id;
 
   // Query to get all rooms for the current user
   const query = `
-      SELECT room.room_id, room.room_name, MAX(message.sent_datetime) as last_message_date
-      FROM room_user
-      JOIN room ON room_user.room_id = room.room_id
-      LEFT JOIN message ON room_user.room_user_id = message.room_user_id
-      WHERE room_user.user_id = ?
-      GROUP BY room.room_id
-      ORDER BY last_message_date DESC
+  SELECT room.room_id, lmd.last_message_date, rm.unread_message_count
+  FROM room_user
+  JOIN room ON room_user.room_id = room.room_id
+  JOIN (
+    SELECT room_user.room_id, MAX(message.sent_datetime) as last_message_date
+    FROM room_user
+    LEFT JOIN message ON room_user.room_user_id = message.room_user_id
+    GROUP BY room_user.room_id
+  ) lmd ON lmd.room_id = room.room_id
+  JOIN (
+    SELECT room_user.room_id,COUNT(*) as unread_message_count
+    FROM message
+    JOIN room_user ON message.room_user_id = room_user.room_user_id
+    WHERE room_user.last_read_msg_id IS NULL OR message.message_id > room_user.last_read_msg_id
+    GROUP BY room_user.room_id
+  ) rm ON room_user.room_id = rm.room_id
+  WHERE room_user.user_id = ?
+  GROUP BY room.room_id
+  ORDER BY last_message_date DESC;
     `;
 
     mysqlConnection.query(query, [userId], (error, results, fields) => {
@@ -149,12 +161,7 @@ app.get("/rooms", async (req, res) => {
         console.error('Error executing query:', error);
         return;
       }
-    
-      // Log the entire results object
       console.log('Query Results:', results);
-    
-      // If you want to log a specific part of the results, like the first row:
-      console.log('First Row:', results[0]);
       res.send(results);
     
     });

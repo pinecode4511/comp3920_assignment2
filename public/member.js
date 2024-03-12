@@ -9,5 +9,5 @@ function logout() {
 }
 
 function getRooms() {
-  window.location.href = '/rooms';
+  window.location.href = '/myRooms';
 } 
