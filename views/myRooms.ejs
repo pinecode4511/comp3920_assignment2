@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Chat Rooms</title>
+</head>
+<body>
+    <h1>My Chat Rooms</h1>
+    <% rooms.forEach(function(room) { %>
+        <div>
+            <p>Room ID: <%= room.room_id %></p>
+            <p>Last Message Date: <%= room.last_message_date %></p>
+            <p>Unread Messages: <%= room.unread_message_count %></p>
+        </div>
+    <% }); %>
+</body>
+</html>

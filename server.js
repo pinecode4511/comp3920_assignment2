@@ -9,11 +9,15 @@ const saltRounds = 10; // for bcrypt password hashing
 
 require("dotenv").config();
 
-const app = express();
+const app = express();  
 const port = process.env.PORT || 3000;
 const path = require("path");
 const e = require("express");
 
+
+// Set the view engine to ejs
+app.set('view engine', 'ejs');
+app.set('views', '/views');
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
 // Configure session middleware to use MongoDB
@@ -165,7 +169,7 @@ app.get("/myRooms", async (req, res) => {
         return;
       }
       console.log("Query Results:", results);
-      res.send(results);
+      res.render('myRooms', { rooms: results });
     });
   }
 
