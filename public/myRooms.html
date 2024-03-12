@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Chat Rooms</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f4;
+  }
+  .chat-rooms-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .chat-room {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .chat-room:last-child {
+    border-bottom: none;
+  }
+  .room-info {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  .room-info li {
+    margin-bottom: 5px;
+  }
+  .unread-messages {
+    color: red;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div class="chat-rooms-container">
+  <h2>My Chat Rooms</h2>
+  <div id="chat-rooms-list">
+    <!-- Chat rooms will be loaded here -->
+  </div>
+</div>
+
+<script src="./myRooms.js">
+</script>
+</body>
+</html>
