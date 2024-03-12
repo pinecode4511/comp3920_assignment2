@@ -219,6 +219,48 @@ app.get("/rooms/:roomId", async (req, res) => {
   }
 });
 
+app.post('/rooms/:roomId/message', async (req, res) => {
+  if (!req.session.user_id) {
+      return res.status(401).send("Unauthorized: User not logged in.");
+  }
+
+  const userId = req.session.user_id;
+  const roomId = req.params.roomId;
+  const { message } = req.body;
+
+  // Find the room_user_id for the current user_id and room_id combination
+  const findRoomUserIdQuery = `
+      SELECT room_user_id
+      FROM room_user
+      WHERE user_id = ? AND room_id = ?
+      LIMIT 1;
+  `;
+
+  try {
+      const [roomUserResult] = await mysqlConnection.promise().query(findRoomUserIdQuery, [userId, roomId]);
+
+      if (roomUserResult.length === 0) {
+          return res.status(401).send("Unauthorized: You are not a member of this room or the room does not exist.");
+      }
+
+      const roomUserId = roomUserResult[0].room_user_id;
+
+      // Insert the new message into the database using the found room_user_id
+      const insertMessageQuery = `
+          INSERT INTO message (room_user_id, message_content, sent_datetime)
+          VALUES (?, ?, NOW());
+      `;
+      await mysqlConnection.promise().query(insertMessageQuery, [roomUserId, message]);
+
+      // Redirect back to the room messages page
+      res.redirect('/rooms/' + roomId);
+  } catch (error) {
+      console.error("Error executing query:", error);
+      res.status(500).send("An error occurred while posting your message.");
+  }
+});
+
+
 app.get("*", (req, res) => {
   res.status(404);
   res.send("Page not found - 404");
