@@ -203,7 +203,7 @@ app.get("/rooms/:roomId", async (req, res) => {
       FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
       JOIN user u ON u.user_id = ru.user_id
-      WHERE ru.room_id = 1
+      WHERE ru.room_id = ?
       ORDER BY m.sent_datetime ASC;
       `;
 

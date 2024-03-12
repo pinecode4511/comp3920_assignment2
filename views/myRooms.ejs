@@ -11,7 +11,7 @@
             <div class="room">
                 <a href="/rooms/<%= room.room_id %>">
                     Room ID: <%= room.room_id %>, 
-                    Last Message Date: <%= room.last_message_date %>, 
+                    Last Message Date: <%= room.last_message_date.toLocaleString() %>, 
                     Unread Messages: <%= room.unread_message_count %>
                 </a>
             </div>

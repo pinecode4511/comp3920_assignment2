@@ -8,7 +8,8 @@
     <h1>Chat Room <%= roomId %></h1>
     <% messages.forEach(function(message) { %>
         <div class="message">
-            <p><strong><%= message.username %></strong> (<%= message.sent_datetime %>): <%= message.message_content %></p>
+            <p><strong><%= message.username %></strong>: <%= message.message_content %></p>
+            <p style="color: lightskyblue;"><%= message.sent_datetime.toLocaleString() %></p>
         </div>
     <% }); %>
 </body>
