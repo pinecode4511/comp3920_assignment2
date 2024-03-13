@@ -108,9 +108,14 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
   const query = "SELECT * FROM user WHERE username = ?";
   mysqlConnection.query(query, [username], (error, results) => {
-    if (error || results.length === 0) {
-      res.send("Login failed. User not found.", error);
-    } else {
+    if (error) {
+      res.send(`Error: ${error}`);
+    } else if (results.length > 1) {
+      res.send("Error: Multiple users found.");
+    } else if (results.length === 0) {
+      res.send("Username not found.");
+    }
+    else {
       bcrypt.compare(password, results[0].password, (err, result) => {
         if (result) {
           req.session.username = username;
