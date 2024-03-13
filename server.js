@@ -193,10 +193,10 @@ app.get("/rooms/:roomId", async (req, res) => {
     }
 
     const [latestMessageId] = await mysqlConnection.promise().query(`
-      SELECT MAX(message_id) FROM message m
+      SELECT MAX(message_id) AS max_msg_id FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
       WHERE ru.room_id = ?`, [roomId]);
-    console.log(`latestMessage:${latestMessageId[0].MAX(message_id)})}, r_u_id:${r_u_id[0].room_user_id}`)
+    console.log(`latestMessage:${latestMessageId[0].max_msg_id})}, r_u_id:${r_u_id[0].room_user_id}`)
 
     if (latestMessageId) {
       await mysqlConnection.promise().query(
