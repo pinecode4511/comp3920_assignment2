@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><%username%>'s Chat Rooms</title>
+    <title>My Chat Rooms</title>
 </head>
 <body>
-    <h1>My Chat Rooms</h1>
+    <h1><%= username %>'s Chat Rooms</h1>
     <div id="rooms-container">
         <% rooms.forEach(function(room) { %>
             <div class="room">
