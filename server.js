@@ -77,7 +77,7 @@ const mysqlConnection = mysql.createPool({
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
   multipleStatements: false,
-	namedPlaceholders: true
+  namedPlaceholders: true,
 });
 
 // Signup Handler with bcrypt hashing
@@ -109,8 +109,7 @@ app.post("/login", (req, res) => {
       res.send("Error: Multiple users found.");
     } else if (results.length === 0) {
       res.send("Username not found.");
-    }
-    else {
+    } else {
       bcrypt.compare(password, results[0].password, (err, result) => {
         if (result) {
           req.session.username = username;
@@ -140,25 +139,22 @@ app.get("/myRooms", async (req, res) => {
     const userId = req.session.user_id;
     // Query to get all rooms for the current user
     const query = `
-    SELECT room.room_id, lmd.last_message_date, rm.unread_message_count
-    FROM room_user
-    JOIN room ON room_user.room_id = room.room_id
+    SELECT ru.room_id, lmd.last_message_date, umc.unread_message_count
+    FROM room_user ru
     JOIN (
-      SELECT room_user.room_id, MAX(message.sent_datetime) as last_message_date
-      FROM room_user
-      LEFT JOIN message ON room_user.room_user_id = message.room_user_id
-      GROUP BY room_user.room_id
-    ) lmd ON lmd.room_id = room.room_id
+	    SELECT room_user.room_id, MAX(message.sent_datetime) AS last_message_date
+	    FROM room_user
+	    LEFT JOIN message ON room_user.room_user_id = message.room_user_id
+	    GROUP BY room_user.room_id
+    ) lmd ON lmd.room_id = ru.room_id
     JOIN (
-      SELECT room_user.room_id,COUNT(*) as unread_message_count
-      FROM message
-      JOIN room_user ON message.room_user_id = room_user.room_user_id
-      WHERE room_user.last_read_msg_id IS NULL OR message.message_id > room_user.last_read_msg_id
-      GROUP BY room_user.room_id
-    ) rm ON room_user.room_id = rm.room_id
-    WHERE room_user.user_id = ?
-    GROUP BY room.room_id
-    ORDER BY last_message_date DESC;
+	    SELECT ru.user_id, ru.room_id,COUNT(m.message_id) AS unread_message_count
+	    FROM room_user ru
+	    LEFT JOIN message m ON ru.room_user_id = m.room_user_id AND m.message_id > ru.last_read_msg_id
+	    GROUP BY ru.user_id, ru.room_id
+    ) umc ON umc.room_id = ru.room_id
+    WHERE ru.user_id = 3
+    GROUP BY ru.room_id;
       `;
 
     mysqlConnection.query(query, [userId], (error, results, fields) => {
@@ -180,11 +176,13 @@ app.get("/rooms/:roomId", async (req, res) => {
   const userId = req.session.user_id;
   const roomId = req.params.roomId;
 
-
   try {
     const [r_u_id] = await mysqlConnection
       .promise()
-      .query('SELECT room_user_id FROM room_user WHERE room_id = ? AND user_id = ?', [roomId, userId]);
+      .query(
+        "SELECT room_user_id FROM room_user WHERE room_id = ? AND user_id = ?",
+        [roomId, userId]
+      );
 
     // If the user is not a member of the room, send an unauthorized message
     if (r_u_id.length === 0) {
@@ -192,17 +190,26 @@ app.get("/rooms/:roomId", async (req, res) => {
       return;
     }
 
-    const [latestMessageId] = await mysqlConnection.promise().query(`
+    const [latestMessageId] = await mysqlConnection.promise().query(
+      `
       SELECT MAX(message_id) AS max_msg_id FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
-      WHERE ru.room_id = ?`, [roomId]);
-    console.log(`latestMessage:${latestMessageId[0].max_msg_id}, r_u_id:${r_u_id[0].room_user_id}`)
+      WHERE ru.room_id = ?`,
+      [roomId]
+    );
+    console.log(
+      `latestMessage:${latestMessageId[0].max_msg_id}, r_u_id:${r_u_id[0].room_user_id}`
+    );
 
     if (latestMessageId) {
-      await mysqlConnection.promise().query(
-          'UPDATE room_user SET last_read_msg_id = ? WHERE room_user_id = ?', [latestMessageId[0].max_msg_id, r_u_id[0].room_user_id]);
-    } else{
-      console.error('Cannot find latestMessageId');
+      await mysqlConnection
+        .promise()
+        .query(
+          "UPDATE room_user SET last_read_msg_id = ? WHERE room_user_id = ?",
+          [latestMessageId[0].max_msg_id, r_u_id[0].room_user_id]
+        );
+    } else {
+      console.error("Cannot find latestMessageId");
     }
 
     // Query to fetch messages from the database for the room
@@ -227,9 +234,9 @@ app.get("/rooms/:roomId", async (req, res) => {
   }
 });
 
-app.post('/rooms/:roomId/message', async (req, res) => {
+app.post("/rooms/:roomId/message", async (req, res) => {
   if (!req.session.user_id) {
-      return res.status(401).send("Unauthorized: User not logged in.");
+    return res.status(401).send("Unauthorized: User not logged in.");
   }
 
   const userId = req.session.user_id;
@@ -245,29 +252,36 @@ app.post('/rooms/:roomId/message', async (req, res) => {
   `;
 
   try {
-      const [roomUserResult] = await mysqlConnection.promise().query(findRoomUserIdQuery, [userId, roomId]);
+    const [roomUserResult] = await mysqlConnection
+      .promise()
+      .query(findRoomUserIdQuery, [userId, roomId]);
 
-      if (roomUserResult.length === 0) {
-          return res.status(401).send("Unauthorized: You are not a member of this room or the room does not exist.");
-      }
+    if (roomUserResult.length === 0) {
+      return res
+        .status(401)
+        .send(
+          "Unauthorized: You are not a member of this room or the room does not exist."
+        );
+    }
 
-      const roomUserId = roomUserResult[0].room_user_id;
+    const roomUserId = roomUserResult[0].room_user_id;
 
-      // Insert the new message into the database using the found room_user_id
-      const insertMessageQuery = `
+    // Insert the new message into the database using the found room_user_id
+    const insertMessageQuery = `
           INSERT INTO message (room_user_id, message_content, sent_datetime)
           VALUES (?, ?, NOW());
       `;
-      await mysqlConnection.promise().query(insertMessageQuery, [roomUserId, message]);
+    await mysqlConnection
+      .promise()
+      .query(insertMessageQuery, [roomUserId, message]);
 
-      // Redirect back to the room messages page
-      res.redirect('/rooms/' + roomId);
+    // Redirect back to the room messages page
+    res.redirect("/rooms/" + roomId);
   } catch (error) {
-      console.error("Error executing query:", error);
-      res.status(500).send("An error occurred while posting your message.");
+    console.error("Error executing query:", error);
+    res.status(500).send("An error occurred while posting your message.");
   }
 });
-
 
 app.get("*", (req, res) => {
   res.status(404);
