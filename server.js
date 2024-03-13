@@ -201,7 +201,7 @@ app.get("/rooms/:roomId", async (req, res) => {
 
     if (latestMessageId) {
       await mysqlConnection.promise().query(
-          'UPDATE room_user SET last_read_message_id = ? WHERE room_user_id = ?', [latestMessageId, r_u_id[0]]);
+          'UPDATE room_user SET last_read_msg_id = ? WHERE room_user_id = ?', [latestMessageId, r_u_id[0]]);
     } else{
       console.error('Cannot find latestMessageId');
     }
