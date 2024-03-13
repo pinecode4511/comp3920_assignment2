@@ -153,7 +153,7 @@ app.get("/myRooms", async (req, res) => {
 	    LEFT JOIN message m ON ru.room_user_id = m.room_user_id AND m.message_id > ru.last_read_msg_id
 	    GROUP BY ru.user_id, ru.room_id
     ) umc ON umc.room_id = ru.room_id
-    WHERE ru.user_id = 3
+    WHERE ru.user_id = ?
     GROUP BY ru.room_id;
       `;
 
