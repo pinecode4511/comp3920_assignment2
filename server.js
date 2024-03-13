@@ -196,7 +196,7 @@ app.get("/rooms/:roomId", async (req, res) => {
       SELECT MAX(message_id) FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
       WHERE ru.room_id = ?`, [roomId]);
-    console.log(`latestMessage:${latestMessage}, r_u_id:${r_u_id}`)
+    console.log(`latestMessage:${JSON.stringify(latestMessage)}, r_u_id:${JSON.stringify(r_u_id)}`)
     const latestMessageId = [latestMessage][0];
 
     if (latestMessageId) {
