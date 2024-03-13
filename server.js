@@ -162,7 +162,7 @@ app.get("/myRooms", async (req, res) => {
         console.error("Error executing query:", error);
         return;
       }
-      res.render("myRooms", { rooms: results });
+      res.render("myRooms", { username:req.session.username,rooms: results });
     });
   }
 });
