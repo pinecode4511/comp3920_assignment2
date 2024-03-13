@@ -71,11 +71,13 @@ app.get("/login", (req, res) => {
 });
 
 // MySQL connection (secure version)
-const mysqlConnection = mysql.createConnection({
+const mysqlConnection = mysql.createPool({
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DB,
+  multipleStatements: false,
+	namedPlaceholders: true
 });
 mysqlConnection.connect((err) => {
   if (err) {
