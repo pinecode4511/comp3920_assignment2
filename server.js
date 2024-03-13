@@ -166,7 +166,6 @@ app.get("/myRooms", async (req, res) => {
         console.error("Error executing query:", error);
         return;
       }
-      console.log("Query Results:", results);
       res.render("myRooms", { rooms: results });
     });
   }
@@ -181,20 +180,30 @@ app.get("/rooms/:roomId", async (req, res) => {
   const userId = req.session.user_id;
   const roomId = req.params.roomId;
 
-  // Query to check if the user is a member of the room
-  const membershipQuery = `
-      SELECT * FROM room_user WHERE room_id = ? AND user_id = ?
-  `;
 
   try {
-    const [membership] = await mysqlConnection
+    const [r_u_id] = await mysqlConnection
       .promise()
-      .query(membershipQuery, [roomId, userId]);
+      .query('SELECT room_user_id FROM room_user WHERE room_id = ? AND user_id = ?', [roomId, userId]);
 
     // If the user is not a member of the room, send an unauthorized message
-    if (membership.length === 0) {
+    if (r_u_id.length === 0) {
       res.status(401).send("Unauthorized: You are not a member of this room.");
       return;
+    }
+
+    const [latestMessage] = await mysqlConnection.promise().query(`
+      SELECT MAX(message_id) FROM message m
+      JOIN room_user ru ON ru.room_user_id = m.room_user_id
+      WHERE ru.room_id = ?`, [roomId]);
+    console.log(`latestMessage:${latestMessage}, r_u_id:${r_u_id}`)
+    const latestMessageId = [latestMessage][0];
+
+    if (latestMessageId) {
+      await mysqlConnection.promise().query(
+          'UPDATE room_user SET last_read_message_id = ? WHERE room_user_id = ?', [latestMessageId, r_u_id[0]]);
+    } else{
+      console.error('Cannot find latestMessageId');
     }
 
     // Query to fetch messages from the database for the room
