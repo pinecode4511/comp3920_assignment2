@@ -79,13 +79,6 @@ const mysqlConnection = mysql.createPool({
   multipleStatements: false,
 	namedPlaceholders: true
 });
-mysqlConnection.connect((err) => {
-  if (err) {
-    console.error("Failed to connect to MySQL: ", err);
-    throw err;
-  }
-  console.log("Connected to MySQL");
-});
 
 // Signup Handler with bcrypt hashing
 app.post("/signup", (req, res) => {
