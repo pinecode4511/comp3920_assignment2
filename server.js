@@ -192,16 +192,15 @@ app.get("/rooms/:roomId", async (req, res) => {
       return;
     }
 
-    const [latestMessage] = await mysqlConnection.promise().query(`
+    const [latestMessageId] = await mysqlConnection.promise().query(`
       SELECT MAX(message_id) FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
       WHERE ru.room_id = ?`, [roomId]);
-    console.log(`latestMessage:${JSON.stringify(latestMessage)}, r_u_id:${JSON.stringify(r_u_id)}`)
-    const latestMessageId = [latestMessage][0];
+    console.log(`latestMessage:${JSON.stringify(latestMessageId)}, r_u_id:${JSON.stringify(r_u_id)}`)
 
     if (latestMessageId) {
       await mysqlConnection.promise().query(
-          'UPDATE room_user SET last_read_msg_id = ? WHERE room_user_id = ?', [latestMessageId, r_u_id[0]]);
+          'UPDATE room_user SET last_read_msg_id = ? WHERE room_user_id = ?', [latestMessageId, r_u_id]);
     } else{
       console.error('Cannot find latestMessageId');
     }
