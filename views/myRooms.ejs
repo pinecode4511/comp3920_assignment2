@@ -12,7 +12,9 @@
                 <a href="/rooms/<%= room.room_id %>">
                     Room <%= room.room_id %>: <%= room.room_name %>
                 </a>
-                <p>Last Message Date: <%= room.last_message_date.toLocaleString() %>, Unread Messages: <%= room.unread_message_count %></p>
+                <p>Last Message Date: <% if (room.last_message_date) { %>
+                  <%= room.last_message_date.toLocaleString() %>
+              <% } else { %> No messages yet <% } %>, Unread Messages: <%= room.unread_message_count %></p>
             </div>
         <% }); %>
     </div>
