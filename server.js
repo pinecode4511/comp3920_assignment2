@@ -182,7 +182,7 @@ app.get("/rooms/:roomId", async (req, res) => {
     const [r_u_id] = await mysqlConnection
       .promise()
       .query(
-        "SELECT room_user_id FROM room_user WHERE room_id = ? AND user_id = ?",
+        "SELECT ru.room_user_id, r.room_name FROM room_user ru JOIN room r ON r.room_id = ru.room_id WHERE ru.room_id = ? AND ru.user_id = ?",
         [roomId, userId]
       );
 
@@ -191,6 +191,7 @@ app.get("/rooms/:roomId", async (req, res) => {
       res.status(401).send("Unauthorized: You are not a member of this room.");
       return;
     }
+    const roomName = r_u_id[0].room_name;
 
     const [latestMessageId] = await mysqlConnection.promise().query(
       `
@@ -217,11 +218,10 @@ app.get("/rooms/:roomId", async (req, res) => {
 
     // Query to fetch messages from the database for the room
     const messagesQuery = `
-      SELECT m.message_content, r.room_name, u.username, m.sent_datetime 
+      SELECT m.message_content, u.username, m.sent_datetime 
       FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
       JOIN user u ON u.user_id = ru.user_id
-      JOIN room r ON r.room_id = ru.room_id
       WHERE ru.room_id = ?
       ORDER BY m.sent_datetime ASC;
       `;
