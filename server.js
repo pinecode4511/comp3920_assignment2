@@ -208,6 +208,7 @@ app.get("/rooms/:roomId", async (req, res) => {
           "UPDATE room_user SET last_read_msg_id = ? WHERE room_user_id = ?",
           [latestMessageId[0].max_msg_id, r_u_id[0].room_user_id]
         );
+        console.log(`Last read message id updated. Query:UPDATE room_user SET last_read_msg_id = ${latestMessageId[0].max_msg_id} WHERE room_user_id = ${r_u_id[0].room_user_id}`);
     } else {
       console.error("Cannot find latestMessageId");
     }
