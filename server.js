@@ -175,6 +175,7 @@ app.get("/rooms/:roomId", async (req, res) => {
   }
 
   const userId = req.session.user_id;
+  const userName = req.session.username;
   const roomId = req.params.roomId;
 
   try {
@@ -216,10 +217,11 @@ app.get("/rooms/:roomId", async (req, res) => {
 
     // Query to fetch messages from the database for the room
     const messagesQuery = `
-      SELECT m.message_content, u.username, m.sent_datetime 
+      SELECT m.message_content, r.room_name, u.username, m.sent_datetime 
       FROM message m
       JOIN room_user ru ON ru.room_user_id = m.room_user_id
       JOIN user u ON u.user_id = ru.user_id
+      JOIN room r ON r.room_id = ru.room_id
       WHERE ru.room_id = ?
       ORDER BY m.sent_datetime ASC;
       `;
@@ -229,7 +231,7 @@ app.get("/rooms/:roomId", async (req, res) => {
       .query(messagesQuery, [roomId]);
 
     // Render the template for displaying messages
-    res.render("roomMessages", { roomId: roomId, messages: messages });
+    res.render("roomMessages", { roomId: roomId, roomName:roomName, userName: userName, messages: messages });
   } catch (error) {
     console.error("Error executing query:", error);
     res.status(500).send("An error occurred while fetching messages.");

@@ -5,7 +5,10 @@
     <title>Chat Room <%= roomId %></title>
   </head>
   <body>
-    <h1>Chat Room <%= roomId %></h1>
+    <h1>Chat Room <%= roomId %>: <%= roomName %></h1>
+    <p>You are logged in as: <%= userName %></p>
+    <a href="/myRooms" style="display: inline-block;padding: 10px 20px;border-radius: 5px;font-weight: bold;">Back to My Rooms</a>
+
     <% messages.forEach(function(message) { %>
     <div class="message">
       <p>
