@@ -139,8 +139,9 @@ app.get("/myRooms", async (req, res) => {
     const userId = req.session.user_id;
     // Query to get all rooms for the current user
     const query = `
-    SELECT ru.room_id, lmd.last_message_date, umc.unread_message_count
+    SELECT ru.room_id, r.room_name,lmd.last_message_date, umc.unread_message_count
     FROM room_user ru
+    JOIN room r ON ru.room_id = r.room_id
     JOIN (
 	    SELECT room_user.room_id, MAX(message.sent_datetime) AS last_message_date
 	    FROM room_user
