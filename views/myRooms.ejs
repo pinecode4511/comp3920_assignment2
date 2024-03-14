@@ -10,12 +10,14 @@
         <% rooms.forEach(function(room) { %>
             <div class="room">
                 <a href="/rooms/<%= room.room_id %>">
-                    Room ID: <%= room.room_id %>, 
-                    Last Message Date: <%= room.last_message_date.toLocaleString() %>, 
-                    Unread Messages: <%= room.unread_message_count %>
+                    Room <%= room.room_id %>: <%= room.room_name %>
                 </a>
+                <p>Last Message Date: <%= room.last_message_date.toLocaleString() %>, Unread Messages: <%= room.unread_message_count %></p>
             </div>
         <% }); %>
     </div>
+    <form action="/create-group" method="get">
+      <button type="submit">Invite People & Create a Group</button>
+    </form>
 </body>
 </html>

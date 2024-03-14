@@ -150,7 +150,7 @@ app.get("/myRooms", async (req, res) => {
     JOIN (
 	    SELECT ru.user_id, ru.room_id,COUNT(m.message_id) AS unread_message_count
 	    FROM room_user ru
-	    LEFT JOIN message m ON ru.room_user_id = m.room_user_id AND m.message_id > ru.last_read_msg_id
+	    LEFT JOIN message m ON ru.room_user_id = m.room_user_id AND (ru.last_read_msg_id IS NULL OR m.message_id > ru.last_read_msg_id)
 	    GROUP BY ru.user_id, ru.room_id
     ) umc ON umc.room_id = ru.room_id
     WHERE ru.user_id = ?
@@ -283,6 +283,53 @@ app.post("/rooms/:roomId/message", async (req, res) => {
     res.status(500).send("An error occurred while posting your message.");
   }
 });
+
+app.get('/create-group', async (req, res) => {
+  try {
+      const [users] = await mysqlConnection.promise().query('SELECT user_id, username FROM user', [req.session.user_id]);
+      res.render('createGroup', { users: users });
+  } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).send("An error occurred while fetching users.");
+  }
+});
+
+app.post('/submit-group', async (req, res) => {
+  const { invitedUsers, groupName } = req.body;
+  const startDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+  // Step 1: Get a connection from the pool
+  const connection = await mysqlConnection.promise().getConnection();
+  
+  try {
+      await connection.beginTransaction(); // Start the transaction
+
+      // Step 2: Insert new group into `room` table
+      const insertRoomQuery = 'INSERT INTO room (room_name, start_date) VALUES (?, ?)';
+      const [roomResult] = await connection.query(insertRoomQuery, [groupName, startDate]);
+
+      // Retrieve `room_id` of the newly created group
+      const roomId = roomResult.insertId;
+
+      // Insert invited users into `room_user` table
+      const invitedUsersArray = Array.isArray(invitedUsers) ? invitedUsers : [invitedUsers];
+      for (const userId of invitedUsersArray) {
+          const insertRoomUserQuery = 'INSERT INTO room_user (user_id, room_id, last_read_msg_id) VALUES (?, ?, NULL)';
+          await connection.query(insertRoomUserQuery, [userId, roomId]);
+      }
+
+      await connection.commit(); // Commit the transaction
+      console.log('Group created successfully');  
+      connection.release(); // Release the connection back to the pool
+      res.redirect('/myRooms'); // Redirect or respond as needed
+  } catch (error) {
+      await connection.rollback(); // Roll back the transaction on error
+      connection.release(); // Release the connection back to the pool
+      console.error("Error creating group:", error);
+      res.status(500).send("An error occurred while creating the group.");
+  }
+});
+
 
 app.get("*", (req, res) => {
   res.status(404);

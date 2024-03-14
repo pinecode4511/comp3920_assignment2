@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Group</title>
+</head>
+<body>
+    <h1>Create Group</h1>
+    <form action="/submit-group" method="post">
+        <% users.forEach(function(user) { %>
+            <div>
+                <input type="checkbox" name="invitedUsers" value="<%= user.user_id %>">
+                <label><%= user.username %></label>
+            </div>
+        <% }); %>
+        <input type="text" name="groupName" placeholder="Group Name" required>
+        <button type="submit">Create Group</button>
+    </form>
+</body>
+</html>
