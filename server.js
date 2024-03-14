@@ -305,7 +305,7 @@ app.post('/submit-group', async (req, res) => {
       await connection.beginTransaction(); // Start the transaction
 
       // Step 2: Insert new group into `room` table
-      const insertRoomQuery = 'INSERT INTO room (room_name, start_date) VALUES (?, ?)';
+      const insertRoomQuery = 'INSERT INTO room (room_name, start_datetime) VALUES (?, ?)';
       const [roomResult] = await connection.query(insertRoomQuery, [groupName, startDate]);
 
       // Retrieve `room_id` of the newly created group
